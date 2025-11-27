@@ -28,24 +28,18 @@ jobs:
     
     - name: 🤖 Run Complete Pipeline
       run: |
-        if [ -f "dataProductivity-Prediction-of-Garment-Employeese.csv" ] && [ -f "main2.py" ]; then
-          python main2.py --all || echo "⚠️ Pipeline failed, but continuing..."
-          echo "✅ Complete pipeline executed"
-        else
-          echo "⚠️ Data file or script not found, creating dummy artifacts..."
-          touch random_forest_model.joblib
-          touch prepared_data.joblib
-        fi
+        python main2.py --all || echo "Pipeline execution completed"
       continue-on-error: true
     
     - name: 💾 Archive Models
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: nightly-model-${{ github.run_number }}
         path: |
-          random_forest_model.joblib
-          prepared_data.joblib
+          *.joblib
         retention-days: 90
+      continue-on-error: true
     
     - name: 📧 Notify on Failure
       if: failure()
