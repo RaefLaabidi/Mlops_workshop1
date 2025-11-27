@@ -1,0 +1,56 @@
+
+# VARIABLE DECLARATION
+
+PYTHON = python3
+ENV_NAME = venv
+REQUIREMENTS = requirements.txt
+DATA_FILE = dataProductivity-Prediction-of-Garment-Employeese.csv
+PYTHON_FILES = model_pipeline.py main.py main2.py
+
+#  ENVIRONMENT CONFIGURATION
+.PHONY: setup
+setup:
+	@echo "🔧 Creating the virtual environment and installing dependencies..."
+	@$(PYTHON) -m venv $(ENV_NAME)
+	@$(ENV_NAME)/bin/python3 -m pip install --upgrade pip
+	@$(ENV_NAME)/bin/python3 -m pip install -r $(REQUIREMENTS)
+
+# 2. CODE QUALITY CHECKS
+.PHONY: quality
+quality: pylint flake8 bandit
+	
+
+# Code Quality: Pylint
+.PHONY: pylint
+pylint:
+
+	@$(ENV_NAME)/bin/python3 -m pylint $(PYTHON_FILES) --exit-zero --ignore=R0801,C0301,C0304,W0612,W0613
+
+# Formatting: Flake8  
+.PHONY: flake8
+flake8:
+	
+	@$(ENV_NAME)/bin/python3 -m flake8 $(PYTHON_FILES) --max-line-length=79 --exit-zero 
+
+# Security: Bandit
+.PHONY: bandit
+bandit:
+
+	@$(ENV_NAME)/bin/python3 -m bandit -r $(PYTHON_FILES) -f txt || true
+
+# 3. DATA PREPARATION
+
+.PHONY: data
+data:
+	@echo "Model Preparing"
+	@$(ENV_NAME)/bin/python3 main2.py --prepare
+	
+# 4. MODEL TRAINING
+
+.PHONY: train
+train: data
+        @echo "Model Training"
+	@$(ENV_NAME)/bin/python3 main2.py --train
+	
+
+
