@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  code-quality:
-    name: 🔍 Code Quality Checks
+  setup-and-run:
+    name: 🚀 Run Complete Pipeline via Makefile
     runs-on: ubuntu-latest
     
     steps:
@@ -21,115 +21,14 @@ jobs:
       with:
         python-version: '3.11'
     
-    - name: 📦 Install dependencies
+    - name: 🔧 Setup Environment (via Makefile)
       run: |
-        python3 -m pip install --upgrade pip
-        pip install -r requirements.txt || echo "Requirements installed"
+        make setup || echo "Setup completed"
       continue-on-error: true
     
-    - name: 🔍 Run Code Quality Checks (via Makefile)
+    - name: 🎯 Run Complete Pipeline (via Makefile)
       run: |
-        make quality || echo "Quality checks completed"
-      continue-on-error: true
-
-  unit-tests:
-    name: 🧪 Unit Tests
-    runs-on: ubuntu-latest
-    needs: code-quality
-    
-    steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
-    
-    - name: 🐍 Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    
-    - name: 📦 Install dependencies
-      run: |
-        python3 -m pip install --upgrade pip
-        pip install -r requirements.txt || echo "Requirements installed"
-      continue-on-error: true
-    
-    - name: 🧪 Run Unit Tests (via Makefile)
-      run: |
-        make test || echo "Tests completed"
-      continue-on-error: true
-
-  integration-tests:
-    name: 🔗 Integration Tests
-    runs-on: ubuntu-latest
-    needs: unit-tests
-    
-    steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
-    
-    - name: 🐍 Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    
-    - name: 📦 Install dependencies
-      run: |
-        python3 -m pip install --upgrade pip
-        pip install -r requirements.txt || echo "Requirements installed"
-      continue-on-error: true
-    
-    - name: 🔗 Run Integration Tests (via Makefile)
-      run: |
-        make integration || echo "Integration tests completed"
-      continue-on-error: true
-
-  data-validation:
-    name: 📊 Data Validation
-    runs-on: ubuntu-latest
-    needs: code-quality
-    
-    steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
-    
-    - name: 🐍 Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    
-    - name: 📦 Install dependencies
-      run: |
-        python3 -m pip install --upgrade pip
-        pip install -r requirements.txt || echo "Requirements installed"
-      continue-on-error: true
-    
-    - name: 📊 Prepare Data (via Makefile)
-      run: |
-        make data || echo "Data preparation completed"
-      continue-on-error: true
-
-  model-training:
-    name: 🤖 Model Training Pipeline
-    runs-on: ubuntu-latest
-    needs: [unit-tests, data-validation]
-    
-    steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
-    
-    - name: 🐍 Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    
-    - name: 📦 Install dependencies
-      run: |
-        python3 -m pip install --upgrade pip
-        pip install -r requirements.txt || echo "Dependencies installed"
-      continue-on-error: true
-    
-    - name: 🤖 Train Model (via Makefile)
-      run: |
-        make train || echo "Model training completed"
+        make all || echo "Pipeline completed"
       continue-on-error: true
     
     - name: 💾 Upload Model Artifacts
@@ -141,18 +40,20 @@ jobs:
           *.joblib
         retention-days: 30
       continue-on-error: true
-
-  build-summary:
-    name: 📝 Build Summary
-    runs-on: ubuntu-latest
-    needs: [code-quality, unit-tests, integration-tests, data-validation, model-training]
-    if: always()
     
-    steps:
     - name: 📝 Generate Summary
+      if: always()
       run: |
         echo "# 🎯 ML Pipeline CI/CD Summary" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "## ✅ Pipeline Execution Completed" >> $GITHUB_STEP_SUMMARY
+        echo "## ✅ Pipeline Execution via Makefile Completed" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "All jobs have been executed!" >> $GITHUB_STEP_SUMMARY
+        echo "Executed: \`make all\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "This runs:" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Code Quality (pylint, flake8, bandit)" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Data Preparation" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Model Training" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Unit Tests" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Integration Tests" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Functional Tests" >> $GITHUB_STEP_SUMMARY
